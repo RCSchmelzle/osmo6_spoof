@@ -11,6 +11,7 @@ from services.device_information_service import DeviceInformationService
 # --- Minimal Advertisement ---
 from dbus_next.service import ServiceInterface, dbus_property, method
 from services.empty_ff60_service import EmptyFF60Service
+from services.gimbal_control_service import GimbalControlService
 
 class TestAdvertisement(ServiceInterface):
     def __init__(self, path, service_uuids, local_name):
@@ -88,6 +89,10 @@ async def main():
     empty_service.setup(bus)
     services.append(empty_service)
 
+    gimbal_service = GimbalControlService(app_path + '/gimbal')
+    gimbal_service.setup(bus)
+    services.append(gimbal_service)
+
     # --- Build managed_objects ---
     managed_objects = {}
 
@@ -121,10 +126,12 @@ async def main():
     '/org/bluez/hci0/test_ad',
     [
         '0000180a-0000-1000-8000-00805f9b34fb',  # Device Information
-        '0000ff60-0000-1000-8000-00805f9b34fb',  # Empty Service
+        '0000ff60-0000-1000-8000-00805f9b34fb',  # Empty service
+        '0000fff0-0000-1000-8000-00805f9b34fb',  # Gimbal Control service
     ],
     'OM6-E05LR2-FAKE'
     )
+
 
     bus.export(ad.path, ad)
 
