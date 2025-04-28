@@ -36,16 +36,6 @@ class GimbalControlService(ServiceInterface):
     def setup(self, bus):
         bus.export(self.path, self)
 
-        # FFF3: Control Write/Notify
-        fff3 = SimpleWriteCharacteristic(
-            self.path + '/fff3',
-            self.path,
-            '0000fff3-0000-1000-8000-00805f9b34fb',
-            write_props=['write', 'notify']
-        )
-        bus.export(fff3.path, fff3)
-        self.characteristics.append((fff3.path, fff3))
-
         # FFF4: Status Notify
         fff4 = SimpleNotifyCharacteristic(
             self.path + '/fff4',
@@ -64,3 +54,14 @@ class GimbalControlService(ServiceInterface):
         )
         bus.export(fff5.path, fff5)
         self.characteristics.append((fff5.path, fff5))
+
+        # FFF3: Control Write/Notify
+        fff3 = SimpleWriteCharacteristic(
+            self.path + '/fff3',
+            self.path,
+            '0000fff3-0000-1000-8000-00805f9b34fb',
+            write_props=['write', 'notify']
+        )
+        bus.export(fff3.path, fff3)
+        self.characteristics.append((fff3.path, fff3))
+
