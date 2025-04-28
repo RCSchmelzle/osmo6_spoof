@@ -12,6 +12,7 @@ from services.device_information_service import DeviceInformationService
 from dbus_next.service import ServiceInterface, dbus_property, method
 from services.empty_ff60_service import EmptyFF60Service
 from services.gimbal_control_service import GimbalControlService
+from services.hid_service import HumanInterfaceDeviceService
 
 class TestAdvertisement(ServiceInterface):
     def __init__(self, path, service_uuids, local_name):
@@ -93,6 +94,10 @@ async def main():
     gimbal_service.setup(bus)
     services.append(gimbal_service)
 
+    hid_service = HumanInterfaceDeviceService(app_path + '/hid')
+    hid_service.setup(bus)
+    services.append(hid_service)
+
     # --- Build managed_objects ---
     managed_objects = {}
 
@@ -125,12 +130,14 @@ async def main():
     ad = TestAdvertisement(
     '/org/bluez/hci0/test_ad',
     [
-        '0000180a-0000-1000-8000-00805f9b34fb',  # Device Information
+        '0000180a-0000-1000-8000-00805f9b34fb',  # Device Info
         '0000ff60-0000-1000-8000-00805f9b34fb',  # Empty service
-        '0000fff0-0000-1000-8000-00805f9b34fb',  # Gimbal Control service
+        '0000fff0-0000-1000-8000-00805f9b34fb',  # Gimbal control
+        '00001812-0000-1000-8000-00805f9b34fb',  # HID service
     ],
     'OM6-E05LR2-FAKE'
     )
+
 
 
     bus.export(ad.path, ad)

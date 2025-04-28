@@ -1,6 +1,5 @@
-from dbus_next.service import ServiceInterface, dbus_property
+from dbus_next.service import ServiceInterface, dbus_property, method
 from characteristics.base_characteristics import SimpleReadCharacteristic, SimpleWriteCharacteristic, SimpleNotifyCharacteristic
-from characteristics.hid_report_characteristic import HIDReportCharacteristic
 
 class HumanInterfaceDeviceService(ServiceInterface):
     def __init__(self, path):
@@ -28,58 +27,61 @@ class HumanInterfaceDeviceService(ServiceInterface):
 
     @dbus_property()
     def Characteristics(self) -> 'ao':
-        return self.characteristics
+        return [path for path, _ in self.characteristics]
 
     @Characteristics.setter
     def Characteristics(self, value: 'ao'):
-        self.characteristics = value
+        pass
 
     def setup(self, bus):
         bus.export(self.path, self)
 
-        # HID Information (0x2A4A) - Read
+        # HID Information (0x2A4A) - Read only
         hid_info = SimpleReadCharacteristic(
-            self.path + '/hid_info',
+            self.path + '/hid_information',
             self.path,
             '00002a4a-0000-1000-8000-00805f9b34fb',
-            b'\x11\x01\x00\x02'  # HID version 1.11, country code 0, flags 2
+            b'\x11\x01\x00\x02'  # Example: Version 1.11, Country Code 0x00, Flags 0x02
         )
         bus.export(hid_info.path, hid_info)
-        self.characteristics.append(hid_info.path)
+        self.characteristics.append((hid_info.path, hid_info))
 
-        # Report Map (0x2A4B) - Read
-        report_map = SimpleReadCharacteristic(
-            self.path + '/report_map',
+        # Protocol Mode (0x2A4B) - Read + Write
+        protocol_mode = SimpleWriteCharacteristic(
+            self.path + '/protocol_mode',
             self.path,
             '00002a4b-0000-1000-8000-00805f9b34fb',
-            b'\x05\x01'  # Placeholder HID Report Descriptor (you can customize later)
+            write_props=['read', 'write']
         )
-        bus.export(report_map.path, report_map)
-        self.characteristics.append(report_map.path)
+        bus.export(protocol_mode.path, protocol_mode)
+        self.characteristics.append((protocol_mode.path, protocol_mode))
 
         # HID Control Point (0x2A4C) - Write Without Response
         control_point = SimpleWriteCharacteristic(
             self.path + '/control_point',
             self.path,
-            '00002a4c-0000-1000-8000-00805f9b34fb'
+            '00002a4c-0000-1000-8000-00805f9b34fb',
+            write_props=['write-without-response']
         )
         bus.export(control_point.path, control_point)
-        self.characteristics.append(control_point.path)
+        self.characteristics.append((control_point.path, control_point))
 
-        # HID Report 1 (0x2A4D) - Read, Write, Notify
-        report1 = HIDReportCharacteristic(
+        # Report 1 (0x2A4D) - Read, Write, Notify
+        report1 = SimpleWriteCharacteristic(
             self.path + '/report1',
             self.path,
-            '00002a4d-0000-1000-8000-00805f9b34fb'
+            '00002a4d-0000-1000-8000-00805f9b34fb',
+            write_props=['read', 'write', 'notify']
         )
-        report1.setup(bus)
-        self.characteristics.append(report1.path)
+        bus.export(report1.path, report1)
+        self.characteristics.append((report1.path, report1))
 
-        # HID Report 2 (0x2A4D again) - Read, Write, Notify
-        report2 = HIDReportCharacteristic(
+        # Report 2 (0x2A4D) - another Report characteristic
+        report2 = SimpleWriteCharacteristic(
             self.path + '/report2',
             self.path,
-            '00002a4d-0000-1000-8000-00805f9b34fb'
+            '00002a4d-0000-1000-8000-00805f9b34fb',
+            write_props=['read', 'write', 'notify']
         )
-        report2.setup(bus)
-        self.characteristics.append(report2.path)
+        bus.export(report2.path, report2)
+        self.characteristics.append((report2.path, report2))
