@@ -1,6 +1,5 @@
 from dbus_next.service import ServiceInterface, dbus_property, method
-from characteristics.base_characteristics import ServiceChangedCharacteristic
-
+from characteristics.service_changed_characteristic import ServiceChangedCharacteristic
 class GattService(ServiceInterface):
     def __init__(self, path):
         super().__init__('org.bluez.GattService1')

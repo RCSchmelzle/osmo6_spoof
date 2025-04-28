@@ -78,7 +78,7 @@ async def main():
 
     adapter = bus.get_proxy_object('org.bluez', '/org/bluez/hci0', await bus.introspect('org.bluez', '/org/bluez/hci0'))
     adapter_props = adapter.get_interface('org.freedesktop.DBus.Properties')
-    
+
     gatt_manager = adapter.get_interface('org.bluez.GattManager1')
     ad_manager = adapter.get_interface('org.bluez.LEAdvertisingManager1')
 
@@ -93,52 +93,66 @@ async def main():
 
     # === Setup ===
     app_path = '/org/bluez/hci0/test_app'
-
     services = []
 
     # Device Information Service
     device_info = DeviceInformationService(app_path + '/device_info')
-    bus.export(device_info.path, device_info)
     device_info.setup(bus)
     services.append(device_info)
 
     # HID Service
     hid_service = HumanInterfaceDeviceService(app_path + '/hid')
-    bus.export(hid_service.path, hid_service)
     hid_service.setup(bus)
     services.append(hid_service)
 
     # Gimbal Control Service
     gimbal_service = GimbalControlService(app_path + '/gimbal')
-    bus.export(gimbal_service.path, gimbal_service)
     gimbal_service.setup(bus)
     services.append(gimbal_service)
 
     # Generic Access Service
     generic_access = GenericAccessService(app_path + '/gap')
-    bus.export(generic_access.path, generic_access)
     generic_access.setup(bus)
     services.append(generic_access)
 
     # Generic Attribute Service
     generic_attribute = GenericAttributeService(app_path + '/gatt')
-    bus.export(generic_attribute.path, generic_attribute)
     generic_attribute.setup(bus)
     services.append(generic_attribute)
 
     # Empty FF60 Service
     empty_service = EmptyFF60Service(app_path + '/ff60')
-    bus.export(empty_service.path, empty_service)
-    # (No setup needed for Empty Service)
+    empty_service.setup(bus)
     services.append(empty_service)
-
-    
 
 
     # Register GATT Application
-    gatt_app = GattApplication(app_path, [s.path for s in services])
-    bus.export(gatt_app.path, gatt_app)
+   # Build managed_objects map
+    managed_objects = {}
 
+    for service in services:
+        # Each service
+        managed_objects[service.path] = {
+            'org.bluez.GattService1': {
+                'UUID': dbus_next.Variant('s', service.uuid),
+                'Primary': dbus_next.Variant('b', service.primary),
+                'Characteristics': dbus_next.Variant('ao', service.characteristics),
+            }
+        }
+
+        # Each characteristic under the service
+        for char_path in service.characteristics:
+            managed_objects[char_path] = {
+                'org.bluez.GattCharacteristic1': {
+                    # UUID and Flags should already be set by each characteristic itself.
+                    # We'll fetch them via introspection automatically if needed.
+                    # Here, leave empty. BlueZ will introspect them separately.
+                }
+            }
+
+    # Register GATT Application
+    gatt_app = GattApplication(app_path, managed_objects)
+    bus.export(gatt_app.path, gatt_app)
 
     print("🛡 Registering GATT application...")
     await gatt_manager.call_register_application(app_path, {})
@@ -147,13 +161,13 @@ async def main():
 
     # BLE Advertisement
     ad = TestAdvertisement('/org/bluez/hci0/test_ad', [
-    '0000180a-0000-1000-8000-00805f9b34fb',  # Device Info
-    '00001812-0000-1000-8000-00805f9b34fb',  # HID
-    '0000fff0-0000-1000-8000-00805f9b34fb',  # Gimbal Commands
-    '0000ff60-0000-1000-8000-00805f9b34fb',  # Empty Service
-    '00001801-0000-1000-8000-00805f9b34fb'   # Generic Attribute Service
+        '0000180a-0000-1000-8000-00805f9b34fb',  # Device Info
+        '00001812-0000-1000-8000-00805f9b34fb',  # HID
+        '0000fff0-0000-1000-8000-00805f9b34fb',   # Gimbal Control
+        '00001800-0000-1000-8000-00805f9b34fb',   # Generic Access
+        '00001801-0000-1000-8000-00805f9b34fb',   # Generic Attribute
+        '0000ff60-0000-1000-8000-00805f9b34fb',   # Empty
     ], 'OM6-E05LR2-FAKE')
-
 
     ad.export(bus)
 

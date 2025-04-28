@@ -34,6 +34,8 @@ class GenericAttributeService(ServiceInterface):
         self.characteristics = value
 
     def setup(self, bus):
+        bus.export(self.path, self)
+
         service_changed = ServiceChangedCharacteristic(
             self.path + '/service_changed',
             self.path,

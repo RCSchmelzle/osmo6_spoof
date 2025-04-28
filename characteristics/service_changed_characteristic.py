@@ -51,5 +51,6 @@ class ServiceChangedCharacteristic(ServiceInterface):
         self.notifying = False
 
     def setup(self, bus):
+        bus.export(self.path, self)
         self.cccd = CCCDDescriptor(self.path + '/cccd', self.path)
         bus.export(self.cccd.path, self.cccd)

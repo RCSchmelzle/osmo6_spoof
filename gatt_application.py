@@ -1,23 +1,11 @@
-from dbus_next.service import ServiceInterface, dbus_property
+from dbus_next.service import ServiceInterface, method
 
 class GattApplication(ServiceInterface):
-    def __init__(self, path, service_paths):
-        super().__init__('org.bluez.GattApplication1')
+    def __init__(self, path, service_paths_and_characteristics):
+        super().__init__('org.freedesktop.DBus.ObjectManager')  # Correct now
         self.path = path
-        self.service_paths = service_paths
+        self.services_and_chars = service_paths_and_characteristics
 
-    @dbus_property()
-    def Includes(self) -> 'ao':
-        return []  # No included applications
-
-    @Includes.setter
-    def Includes(self, value: 'ao'):
-        pass  # Setter required, even if unused
-
-    @dbus_property()
-    def Services(self) -> 'ao':
-        return self.service_paths
-
-    @Services.setter
-    def Services(self, value: 'ao'):
-        self.service_paths = value
+    @method()
+    def GetManagedObjects(self) -> 'a{oa{sa{sv}}}':
+        return self.services_and_chars

@@ -35,6 +35,8 @@ class HumanInterfaceDeviceService(ServiceInterface):
         self.characteristics = value
 
     def setup(self, bus):
+        bus.export(self.path, self)
+
         # HID Information (0x2A4A) - Read
         hid_info = SimpleReadCharacteristic(
             self.path + '/hid_info',

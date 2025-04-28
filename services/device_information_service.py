@@ -34,6 +34,7 @@ class DeviceInformationService(ServiceInterface):
         self.characteristics = value
 
     def setup(self, bus):
+        bus.export(self.path, self)
         # Manufacturer Name
         manufacturer = SimpleReadCharacteristic(
             self.path + '/manufacturer',

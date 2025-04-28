@@ -34,6 +34,9 @@ class GimbalControlService(ServiceInterface):
         self.characteristics = value
 
     def setup(self, bus):
+
+        bus.export(self.path, self)
+
         # Notify
         notify = SimpleNotifyCharacteristic(
             self.path + '/fff4',

@@ -35,6 +35,8 @@ class GenericAccessService(ServiceInterface):
         self.characteristics = value
 
     def setup(self, bus):
+        bus.export(self.path, self)
+
         # Device Name (0x2A00)
         device_name = SimpleReadCharacteristic(
             self.path + '/device_name',
