@@ -1,4 +1,5 @@
 from dbus_next.service import ServiceInterface, method, dbus_property
+from logger import log_event  # LOGGING INSERT
 
 class SimpleReadCharacteristic(ServiceInterface):
     def __init__(self, path, service_path, uuid, value):
@@ -35,8 +36,9 @@ class SimpleReadCharacteristic(ServiceInterface):
 
     @method()
     def ReadValue(self, options: 'a{sv}') -> 'ay':
-        print(f"📖 [SNIFFER] App READ from {self.uuid}")
+        log_event("READ", self.uuid, self.path, self.value)  # LOGGING INSERT
         return self.value
+
 
 
 class SimpleWriteCharacteristic(ServiceInterface):
@@ -75,7 +77,8 @@ class SimpleWriteCharacteristic(ServiceInterface):
     @method()
     def WriteValue(self, value: 'ay', options: 'a{sv}'):
         self.value = bytes(value)
-        print(f"✍️ [SNIFFER] App WRITE to {self.uuid}: {self.value.hex()}")
+        log_event("WRITE", self.uuid, self.path, self.value)  # LOGGING INSERT
+
 
 
 class SimpleNotifyCharacteristic(ServiceInterface):
@@ -113,11 +116,12 @@ class SimpleNotifyCharacteristic(ServiceInterface):
 
     @method()
     def StartNotify(self):
-        print(f"🔔 [SNIFFER] App START NOTIFY on {self.uuid}")
+        log_event("START_NOTIFY", self.uuid, self.path)  # LOGGING INSERT
         self.notifying = True
 
     @method()
     def StopNotify(self):
-        print(f"🔕 [SNIFFER] App STOP NOTIFY on {self.uuid}")
+        log_event("STOP_NOTIFY", self.uuid, self.path)  # LOGGING INSERT
         self.notifying = False
+
 

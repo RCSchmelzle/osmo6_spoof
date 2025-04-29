@@ -1,5 +1,6 @@
 from dbus_next.service import ServiceInterface, dbus_property, method
 from characteristics.cccd_descriptor import CCCDDescriptor
+from logger import log_event  # LOGGING INSERT
 
 class ServiceChangedCharacteristic(ServiceInterface):
     def __init__(self, path, service_path, uuid):
@@ -42,13 +43,14 @@ class ServiceChangedCharacteristic(ServiceInterface):
 
     @method()
     def StartNotify(self):
-        print(f"🔔 Start Indicate on {self.uuid}")
+        log_event("START_INDICATE", self.uuid, self.path)
         self.notifying = True
 
     @method()
     def StopNotify(self):
-        print(f"🔕 Stop Indicate on {self.uuid}")
+        log_event("STOP_INDICATE", self.uuid, self.path)
         self.notifying = False
+
 
     def setup(self, bus):
         bus.export(self.path, self)

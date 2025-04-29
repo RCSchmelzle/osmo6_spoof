@@ -1,4 +1,6 @@
 from dbus_next.service import ServiceInterface, dbus_property
+from logger import log_event  # LOGGING INSERT
+from dbus_next.service import method
 
 class CCCDDescriptor(ServiceInterface):
     def __init__(self, path, characteristic_path):
@@ -40,3 +42,8 @@ class CCCDDescriptor(ServiceInterface):
     @Value.setter
     def Value(self, value: 'ay'):
         self.value = value
+
+    @method() # added extra
+    def WriteValue(self, value: 'ay', options: 'a{sv}'):
+        self.value = bytes(value)
+        log_event("CCCD_WRITE", self.uuid, self.path, self.value)

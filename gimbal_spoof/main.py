@@ -13,6 +13,7 @@ from dbus_next.service import ServiceInterface, dbus_property, method
 from services.empty_ff60_service import EmptyFF60Service
 from services.gimbal_control_service import GimbalControlService
 from services.hid_service import HumanInterfaceDeviceService
+from logger import set_device_address
 
 class TestAdvertisement(ServiceInterface):
     def __init__(self, path, service_uuids, local_name):
@@ -75,6 +76,7 @@ async def main():
 
     adapter_props_data = await adapter_props.call_get_all('org.bluez.Adapter1')
     address = adapter_props_data['Address'].value
+    set_device_address(address)
     print(f"🔎 Look for BLE device with MAC Address: {address}")
 
     app_path = '/org/bluez/hci0/test_app'
